@@ -1,0 +1,1 @@
+df["year"]=df["year"].fillna(df["year"].)
