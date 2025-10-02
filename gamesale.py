@@ -6,7 +6,9 @@ from sklearn.preprocessing import OrdinalEncoder
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import mean_absolute_error,mean_squared_error
 from sklearn.model_selection import train_test_split,GridSearchCV
-
+from sklearn.ensemble import BaggingRegressor,VotingRegressor
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.linear_model import LinearRegression
 
 db_user = "postgres"
 db_pass = "cheema160"
@@ -27,10 +29,10 @@ print(df.head())
 # sns.pairplot(data=df)
 # plt.show()
 
-x=df[["rank","year","na_sales","eu_sales","jp_sales","other_sales"]]
+x=df[["year","na_sales","eu_sales","jp_sales","other_sales"]]
 y=df["global_sales"]
 
-feature=df[["name","platform","genre","publisher"]]
+feature=df[["platform","genre","publisher"]]
 od=OrdinalEncoder()
 encode=od.fit_transform(feature)
 col=od.get_feature_names_out()
@@ -40,24 +42,13 @@ X=pd.concat([x,encode_data],axis=1)
 
 x_train,x_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=42)
 
-knr=KNeighborsRegressor(leaf_size= 30,metric='manhattan', n_neighbors= 3, p= 1, weights='distance')
+li=[("knr",KNeighborsRegressor(n_neighbors=5)),
+    ("dtr",DecisionTreeRegressor(max_depth=10)),
+    ("lr",LinearRegression())]
 
-knr.fit(x_train,y_train)
-
-print(knr.score(x_test,y_test))
-
-param_grid = {
-    "n_neighbors": [3, 5, 7, 9, 11, 15, 20],
-    "weights": ["uniform", "distance"],
-    "metric": ["euclidean", "manhattan", "minkowski"],
-    "p": [1, 2],          # Only applies if metric="minkowski"
-    "leaf_size": [20, 30, 40]
-}
-
-# gd=GridSearchCV(knr,param_grid=param_grid)
-# gd.fit(x_train,y_train)
-
-# print(gd.best_score_)
-# print(gd.best_params_)
-
+vc=VotingRegressor(li)
+vc.fit(x_train,y_train)
+print("Voting regressor score",vc.score(x_test,y_test))
+print("Mean Absolute error",mean_absolute_error(y_test,vc.predict(x_test)))
+print("Mean squared error",mean_squared_error(y_test,vc.predict(x_test)))
 
