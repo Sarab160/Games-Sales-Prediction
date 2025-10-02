@@ -21,13 +21,13 @@ engine = create_engine(f"postgresql+psycopg2://{db_user}:{db_pass}@{db_host}:{db
 
 df=pd.read_sql("Select * from vgsales",engine)
 print(df.head())
-# print(df["platform"].unique())
-# print(df["genre"].unique())
-# print(df["publisher"].unique())
-# print(df.info())
+print(df["platform"].unique())
+print(df["genre"].unique())
+print(df["publisher"].unique())
+print(df.info())
 
-# sns.pairplot(data=df)
-# plt.show()
+sns.pairplot(data=df)
+plt.show()
 
 x=df[["year","na_sales","eu_sales","jp_sales","other_sales"]]
 y=df["global_sales"]
